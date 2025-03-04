@@ -1,0 +1,273 @@
+---
+title: "Homework 3"
+author: "Sunny Kim"
+date: "2025-03-03"
+output: html_document
+---
+#Open file from downloads: 
+```{r}
+f <- "~/Desktop/zombies.csv" 
+d <- read.table(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+```
+## 1. Calculate population mean and standard deviation for each quantitative random variable (height, weight, age, number of zombies killed, and years of education)
+```{r}
+# Select quantitative variables
+quant_vars <- d[, c("height", "weight", "age", "zombies_killed", "years_of_education")]
+# Calculate population means
+pop_means <- colMeans(quant_vars, na.rm = TRUE)
+# Define population variance function
+pop_var <- function(x) {mean((x - mean(x, na.rm = TRUE))^2, na.rm = TRUE)}
+# Define population standard deviation function
+pop_sd <- function(x){sqrt(pop_var(x))}
+# Calculate population standard deviations
+pop_sds <- sapply(quant_vars, pop_sd)
+# Print results
+pop_means
+pop_sds
+```
+## 2. Use ggplot to make boxplots of quantitative variables by gender
+```{r}
+library(ggplot2)
+#plot for gender and height 
+p1 <- ggplot(data=d, aes(x = gender, y = height, color = gender))  #Define variables
+p1 <- p1 + geom_boxplot()  #Graph them in boxplot
+p1 <- p1 + xlab("Gender") + ylab("Height (cm)")  # Rename axes
+p1 <- p1 + ggtitle("Zombie Height by Gender")  # Add title
+p1
+#plot for gender and weight
+p2 <- ggplot(data=d, aes (x = gender, y = weight, color = gender))
+p2 <- p2 + geom_boxplot()
+p2 <- p2 + xlab("Gender") + ylab("Weight (kg)") 
+p2 <- p2 + ggtitle("Zombie Weight by Gender")
+p2  
+#plot for gender and age
+p3 <- ggplot(data = d, aes(x = gender, y = age, color = gender))  #
+p3 <- p3 + geom_boxplot() 
+p3 <- p3 + xlab("Gender") + ylab("Age (years)")  
+p3 <- p3 + ggtitle("Zombie Age by Gender") 
+p3  
+#plot for gender and zombies killed
+p4 <- ggplot(data = d, aes(x = gender, y = zombies_killed, color = gender))
+p4 <- p4 + geom_boxplot()
+p4 <- p4 + xlab("Gender") + ylab("Zombies Killed")
+p4 <- p4 + ggtitle("Zombies Killed by Gender")
+p4
+#plot for gender and years of education 
+p5 <- ggplot(data = d, aes(x = gender, y = years_of_education, color = gender))
+p5 <- p5 + geom_boxplot()
+p5 <- p5 + xlab("Gender") + ylab("Years of Education")
+p5 <- p5 + ggtitle("Zombie Years of Education by Gender")
+p5
+```
+
+## 3-1. Use ggplot to make scatterplots of height and weight in relation to age.
+```{r}
+#plot for height by age
+p1 <- ggplot(data = d, aes(x = height, y = age)) #define variables
+p1 <- p1 + geom_point() #create plot
+p1 <- p1 + geom_smooth(method = "lm") #linear regression line
+p1 <- p1 + ggtitle("Height by Age") + xlab("Age") + ylab("Height") #title + axes labels
+p1
+#plot for weight by age
+p2 <- ggplot(data = d, aes(x = weight, y = age))
+p2 <- p2 + geom_point()
+p2 <- p2 + geom_smooth(method = "lm")
+p2 <- p2 + ggtitle("Weight by Age") + xlab("Age") + ylab("Weight") 
+p2
+```
+## 3-2. Do these variables seem to be related? In what way?
+#Both show a positive linear trend which suggests that both height and weight increase with age
+
+## 4-1. Using histograms and QQ plots, check whether the quantitative variables seem to be drawn from a normal distribution. 
+```{r}
+attach(d)
+#Using histograms to check
+par(mfrow = c(2, 3))  # Arrange plots in a 2-row, 3-column grid
+# Height
+hist(height, freq = FALSE, col = "skyblue", main = "Height Distribution",
+     xlab = "Height", ylab = "Density")
+lines(density(height, na.rm = TRUE), col = "black")
+# Weight
+hist(weight, freq = FALSE, col = "orange", main = "Weight Distribution",
+     xlab = "Weight", ylab = "Density")
+lines(density(weight, na.rm = TRUE), col = "black")
+
+# Age
+hist(age, freq = FALSE, col = "lightcoral", main = "Age Distribution",
+     xlab = "Age", ylab = "Density")
+lines(density(age, na.rm = TRUE), col = "black")
+
+# Zombies killed
+hist(zombies_killed, freq = FALSE, col = "lightyellow", main = "Zombie Kills Distribution",
+     xlab = "Zombies Killed", ylab = "Density")
+lines(density(zombies_killed, na.rm = TRUE), col = "black")
+
+# Years of education
+hist(years_of_education, freq = FALSE, col = "lightpink", main = "Years of Education Distribution",
+     xlab = "Years of Education", ylab = "Density")
+lines(density(years_of_education, na.rm = TRUE), col = "black")
+
+#Using QQ plots to check
+par(mfrow = c(2, 3))  # Arrange plots in a 2-row, 3-column grid
+#Height
+qqnorm(height, main = "Height Q-Q Plot") 
+qqline(height, col = "red") 
+#Weight
+qqnorm(weight, main = "Weight Q-Q Plot")
+qqline(weight, col = "red")
+#Age 
+qqnorm(age, main = "Age Q-Q Plot")
+qqline(age, col = "red")
+#Zombies killed
+qqnorm(zombies_killed, main = "Zombies Killed Q-Q Plot")
+qqline(zombies_killed, col = "red")
+#ears of education 
+qqnorm(years_of_education, main = "Years of Education Q-Q Plot")
+qqline(years_of_education, col = "red")
+
+par(mfrow = c(1, 1))  # Reset plotting layout for future plots
+detach(d)
+```
+## 4-2. Which seem to be and which do not? For those that are not normal, can you determine from which common distribution they are drawn?
+#Only height, weight and age seem to be drawn from a normal distribution. Guesses for rest: zombies killed - negative bionomial distribution, years of education - log-normal distribution 
+
+## 5. Sample one subset of 30 zombie survivors (without replacement) and calculate mean and standard deviation for each variable. Also estimate standard error and construct the 95% confidence interval for each mean
+```{r}
+set.seed(30)
+sample_size <- 30
+#Sample from each variable
+sample_height <- sample(height, sample_size, replace = FALSE)
+sample_weight <- sample(weight, sample_size, replace = FALSE)
+sample_age <- sample(age, sample_size, replace = FALSE)
+sample_zombies_killed <- sample(zombies_killed, sample_size, replace = FALSE)
+sample_years_of_education <- sample(years_of_education, sample_size, replace = FALSE)
+
+library(dplyr) #load library
+
+#Calculate mean and sd of sample variables
+Mean_Height = mean(sample_height, na.rm = TRUE) #mean height
+SD_Height = sd(sample_height, na.rm = TRUE) #sd height
+SE_Height<- SD_Height/sqrt(sample_size) #se height
+
+Mean_Weight = mean(sample_weight, na.rm = TRUE) #mean weight
+SD_Weight = sd(sample_weight, na.rm = TRUE) #sd weight
+SE_Weight<- SD_Weight/sqrt(sample_size) #se weight
+
+Mean_Age = mean(sample_age, na.rm = TRUE) #mean age
+SD_Age = sd(age, na.rm = TRUE) #sd age
+SE_Age<- SD_Age/sqrt(sample_size) #se age
+
+Mean_Zombies_killed = mean(zombies_killed, na.rm = TRUE) #mean zombies killed
+SD_Zombies_killed = sd(zombies_killed, na.rm = TRUE) #sd zombies killed
+SE_Zombies_killed<- SD_Zombies_killed/sqrt(sample_size) #se zombies killed
+
+Mean_Education = mean(years_of_education, na.rm = TRUE) #mean years of education
+SD_Education = sd(years_of_education, na.rm = TRUE) #sd years of education
+SE_Education<- SD_Education/sqrt(sample_size) #se years of education
+
+# Function for normal distribution 95% Confidence Intervals
+normal_ci <- function(mean, se) {
+  normal_lower <- mean - qnorm(1 - 0.05/2) * se
+  normal_upper <- mean + qnorm(1 - 0.05/2) * se
+  return(c(normal_lower, normal_upper))}
+# Function for not normal distribution 95% Confidence Intervals
+non_normal_ci <- function(mean, se, sample_size) {
+  df <- sample_size - 1
+  t_critical <- qt(1 - 0.05 / 2, df)
+  lower <- mean - t_critical * se
+  upper <- mean + t_critical * se
+  return(c(lower, upper))}
+
+#Calculate CIs
+ci_height <- normal_ci(Mean_Height, SE_Height)
+ci_weight <- normal_ci(Mean_Weight, SE_Weight)
+ci_age <- normal_ci(Mean_Age, SE_Age)
+ci_zombies_killed <- non_normal_ci(Mean_Zombies_killed, SE_Zombies_killed, sample_size)
+ci_education <- non_normal_ci(Mean_Education, SE_Education, sample_size)
+
+#create a data frame to store results
+summary_table <- data.frame(
+  Variable = c("Height", "Weight", "Age", "Zombies Killed", "Years of Education"),
+  Mean = c(Mean_Height,Mean_Weight,Mean_Age,Mean_Zombies_killed,Mean_Education),
+  SD = c(SD_Height,SD_Weight,SD_Age,SD_Zombies_killed,SD_Education),
+  SE = c(SE_Height,SE_Weight,SE_Age,SE_Zombies_killed,SE_Education),
+  CI_Lower = c(ci_height[1], ci_weight[1], ci_age[1], ci_zombies_killed[1], ci_education[1]),
+  CI_Upper = c(ci_height[2], ci_weight[2], ci_age[2], ci_zombies_killed[2], ci_education[2]))
+# Print the table with formatting
+print(summary_table, row.names = FALSE, digits = 4)
+```
+## 6-1. Draw 99 more samples (total 100) and calculate means for each of these samples. 
+```{r}
+set.seed(30)
+sample_size <- 30
+
+library(dplyr) # load library
+attach(d)
+
+# Function to draw a sample and calculate means
+draw_sample_means <- function() {
+  sample_height <- sample(height, sample_size, replace = FALSE)
+  sample_weight <- sample(weight, sample_size, replace = FALSE)
+  sample_age <- sample(age, sample_size, replace = FALSE)
+  sample_zombies_killed <- sample(zombies_killed, sample_size, replace = FALSE)
+  sample_years_of_education <- sample(years_of_education, sample_size, replace = FALSE)
+  return(data.frame(
+    Height = mean(sample_height, na.rm = TRUE),
+    Weight = mean(sample_weight, na.rm = TRUE),
+    Age = mean(sample_age, na.rm = TRUE),
+    Zombies_Killed = mean(sample_zombies_killed, na.rm = TRUE),
+    Years_of_Education = mean(sample_years_of_education, na.rm = TRUE)))}
+# Generate 99 new samples to make the total 100 samples
+sampling_distribution <- bind_rows(draw_sample_means(), replicate(99, draw_sample_means(), simplify = FALSE))
+#Print means for samples
+print(sampling_distribution)
+```
+## 6-2. What are the means and sds of this distribution of means for each variable?
+```{r}
+# Calculate means and standard deviations for each variable in the sampling distribution
+mean_sds <- data.frame(
+  Variable = colnames(sampling_distribution),  
+  Mean = sapply(sampling_distribution, mean),  
+  SD = sapply(sampling_distribution, sd))
+#Print results
+print(mean_sds)
+detach(d)
+```
+## 6-3. How do the standard deviations of means compare to the standard errors estimated in question 5?
+#The standard deviations of means and standard errors from question 5 both measure variability but in different context. The SE refelcts the expected variation of a sample mean from the population mean whereas the SD reflects the variability across 100 sample means (aka sampling SD of sampling distribution).
+
+## 6-4. What do these sampling distributions look like (graph)? Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution?
+```{r}
+# Plot the sampling distributions of means for each variable using hist()
+# Height
+hist(sampling_distribution$Height, 
+     main = "Sampling Distribution of Means: Height", 
+     xlab = "Height", 
+     col = "skyblue", 
+     border = "black")
+# Weight
+hist(sampling_distribution$Weight, 
+     main = "Sampling Distribution of Means: Weight", 
+     xlab = "Weight", 
+     col = "orange", 
+     border = "black")
+# Age
+hist(sampling_distribution$Age, 
+     main = "Sampling Distribution of Means: Age", 
+     xlab = "Age", 
+     col = "lightcoral", 
+     border = "black")
+# Zombies Killed
+hist(sampling_distribution$Zombies_Killed, 
+     main = "Sampling Distribution of Means: Zombies Killed", 
+     xlab = "Zombies Killed", 
+     col = "lightyellow", 
+     border = "black")
+# Years of Education
+hist(sampling_distribution$Years_of_Education, 
+     main = "Sampling Distribution of Means: Years of Education", 
+     xlab = "Years of Education", 
+     col = "lightpink", 
+     border = "black")
+```
+#The variables that were originally normally distributed (height, weight, age) all have sampling distributions that appear to be noraml. The variables that were not originally drawn from normal distribution (zombies killed, years of education) also seem to have sampling distributions that appear to be fairly normal (more so compared to original distributions). This is a result of the Central Limit Theorem which applies even if the underlying data distribution is not normal.
